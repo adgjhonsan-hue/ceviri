@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const data = JSON.parse(fs.readFileSync('analysis_results.json', 'utf8'));
-const htmlPath = 'adana_trafik_raporu.html';
+const htmlPath = 'index.html';
 let html = fs.readFileSync(htmlPath, 'utf8');
 
 // V8 Connectivity Graph - Adana Ana Arter Bağlantıları
