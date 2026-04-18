@@ -1,0 +1,4012 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adana Trafik Zekası | Akıllı Tahmin Sistemi 🚨</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --card: #111827;
+            --accent: #3b82f6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.06);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        /* Predictive Section */
+        .predictive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .predictor-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .predictor-card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .probability-ring {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prob-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .risk-label {
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        /* Custom Dropdown/Slider */
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2rem;
+        }
+
+        option {
+            background-color: var(--card);
+            color: white;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Hotspot List */
+        .hotspots {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .hotspot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .hotspot-item:last-child { border-bottom: none; }
+
+        .loc-info h4 { margin: 0; font-size: 1.1rem; }
+        .loc-info span { font-size: 0.8rem; color: var(--text-dim); }
+
+        .risk-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .high { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .med { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .low { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+        /* Stats Row */
+        .quick-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: var(--glass);
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-box small { color: var(--text-dim); display: block; margin-bottom: 0.2rem; }
+        .stat-box strong { font-size: 1.5rem; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+    
+        #map {
+            width: 100%;
+            height: 450px;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            z-index: 1;
+        }
+    
+    .user-icon { background: var(--accent); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border-radius: 50%; }
+
+    </style>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ADANA TRAFİK ZEKASI</h1>
+        <p class="subtitle">Yılbaşından Bugüne 12.479 Raporun Analizi</p>
+    </header>
+
+    <div class="quick-stats">
+        <div class="stat-box">
+            <small>TOPLAM ANALİZ</small>
+            <strong>12.479</strong>
+        </div>
+        <div class="stat-box">
+            <small>TAHMİNİ DOĞRULUK</small>
+            <strong style="color: var(--success);">%92</strong>
+        </div>
+        <div class="stat-box">
+            <small>KRİTİK SAAT ARALIĞI</small>
+            <strong style="color: var(--warning);">21:00 - 02:00</strong>
+        </div>
+    </div>
+
+    
+    <div class="hotspots" style="margin-bottom: 2rem; border-color: var(--accent);">
+        <h2 style="color: var(--accent); margin-bottom: 1.5rem;">🗺️ Canlı Risk Haritası ve Güzergah Kontrolü</h2>
+        <div id="map"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; margin-top: 1rem;">
+            <select id="routeStart" style="background: var(--glass);">
+                <option value="">Başlangıç Noktası Seçin...</option>
+            </select>
+            <select id="routeEnd" style="background: var(--glass);">
+                <option value="">Hedef Noktası Seçin...</option>
+            </select>
+            <button id="btnCheckRoute" style="background: var(--accent); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                Rotayı Kontrol Et
+            </button>
+        </div>
+        <div id="routeResult" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim); display: none; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 12px;"></div>
+    </div>
+<div class="predictive-grid">
+        <!-- Predictor Tool -->
+        <div class="predictor-card">
+            <h2>🔮 Akıllı Tahmin Motoru</h2>
+            <div class="control-group">
+                <label>KONUM SEÇİN</label>
+                <select id="locSelect"></select>
+            </div>
+            <div class="control-group">
+                <label>SAAT ARALIĞI</label>
+                <select id="hourSelect"></select>
+            </div>
+            
+            <div class="probability-ring">
+                <div class="prob-value" id="probValue">0%</div>
+            </div>
+            <div class="risk-label" id="riskLevelLabel">ANALİZ EDİLİYOR...</div>
+            <p style="text-align: center; color: var(--text-dim); font-size: 0.85rem;" id="insightText">
+                Lütfen konum ve saat seçiniz.
+            </p>
+        
+            <div id="proTipCard" style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; display: none;">
+                <h4 style="color: var(--accent); margin-bottom: 0.5rem;">💡 Nokta Atışı Bilgi</h4>
+                <p id="proTipText" style="font-size: 0.9rem; margin: 0;"></p>
+            </div>
+</div>
+
+        <!-- Hotspots -->
+        <div class="hotspots">
+            <h2>🔥 En Riskli Bölgeler (Tüm Zamanlar)</h2>
+            <div id="hotspotList"></div>
+            <div style="margin-top: 2rem; font-size: 0.85rem; color: var(--text-dim);">
+                * Bu liste, Özal, Ziyapaşa ve Menderes gibi bölgelerdeki tüm halk ağzı tabirlerin birleştirilmesiyle oluşturulmuştur.
+            </div>
+        
+            <div id="goldenRouteCard" style="margin-top: 1rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; display: none;">
+                <h4 style="color: var(--success); margin-bottom: 0.5rem;">🌟 Altın Rota Önerisi</h4>
+                <p id="goldenRouteText" style="font-size: 0.9rem; margin: 0;"></p>
+            </div>
+</div>
+    </div>
+
+    
+    <div class="hotspots" style="margin-top: 3rem;">
+        <h2>🗓️ Haftalık Risk Yoğunluğu (Isı Haritası)</h2>
+        <div style="overflow-x: auto; margin-top: 1rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; color: var(--text-dim);">
+                <thead>
+                    <tr id="heatmapHeader"></tr>
+                </thead>
+                <tbody id="heatmapBody"></tbody>
+            </table>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; font-size: 0.7rem;">
+            <span><span style="display:inline-block; width:10px; height:10px; background:#1e293b; border-radius:2px;"></span> Az Risk</span>
+            <span><span style="display:inline-block; width:10px; height:10px; background:#f59e0b; border-radius:2px;"></span> Orta</span>
+            <span><span style="display:inline-block; width:10px; height:10px; background:#ef4444; border-radius:2px;"></span> Kritik</span>
+        </div>
+    </div>
+<!-- Live Habits Section -->
+    <div class="hotspots" style="background: linear-gradient(145deg, #111827, #050810); border: 2px solid #3b82f633;">
+        <h2 style="color: #60a5fa;"><span class="live-indicator"></span>Burada Olabilir (Alışkanlık Tahminleri)</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 16px;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--danger);">📍 Özal Şube / Ramazanoğlu</h4>
+                <p style="font-size: 0.9rem; color: var(--text-dim);">Gece saat 22:00'den sonra %85 ihtimalle uygulama noktasıdır. Genelde Starbucks önü veya Aksagaz karşısı tutulur.</p>
+            </div>
+            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 16px;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--warning);">📍 Otoban Giriş-Çıkış</h4>
+                <p style="font-size: 0.9rem; color: var(--text-dim);">Hafta içi sabah 09:00 ve gece 01:00'de mutlaka "üfletme" veya kimlik kontrolü mevcuttur.</p>
+            </div>
+            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 16px;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--success);">📍 Ziyapaşa / Atatürk Parkı</h4>
+                <p style="font-size: 0.9rem; color: var(--text-dim);">Öğleden sonra "duba" atılarak trafik kontrolü yapılır. Akşamüstü bar yoğunluğu başladığında radar aktiftir.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    const data = {
+  "hourly": [
+    {
+      "MENDERES": {
+        "pos": 4,
+        "total": 33,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 3
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÖZAL": {
+        "pos": 53,
+        "total": 124,
+        "radar": 31,
+        "alcohol": 1,
+        "check": 23
+      },
+      "MAVİ BULVAR": {
+        "pos": 3,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KOZAN YOLU": {
+        "pos": 2,
+        "total": 27,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "KARATAŞ YOLU": {
+        "pos": 1,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "SEYHAN": {
+        "pos": 9,
+        "total": 35,
+        "radar": 4,
+        "alcohol": 2,
+        "check": 6
+      },
+      "BARAJ YOLU": {
+        "pos": 2,
+        "total": 23,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÇUKUROVA": {
+        "pos": 7,
+        "total": 12,
+        "radar": 0,
+        "alcohol": 3,
+        "check": 6
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 3,
+        "total": 21,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KENAN EVREN": {
+        "pos": 2,
+        "total": 17,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "E5 (D400)": {
+        "pos": 1,
+        "total": 16,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "İBO OSMAN": {
+        "pos": 2,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "OTOBAN": {
+        "pos": 20,
+        "total": 62,
+        "radar": 1,
+        "alcohol": 4,
+        "check": 17
+      },
+      "SARIÇAM": {
+        "pos": 21,
+        "total": 74,
+        "radar": 0,
+        "alcohol": 3,
+        "check": 20
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 13,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 3,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 3
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "ÖZAL": {
+        "pos": 26,
+        "total": 54,
+        "radar": 15,
+        "alcohol": 1,
+        "check": 11
+      },
+      "OTOBAN": {
+        "pos": 4,
+        "total": 22,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SARIÇAM": {
+        "pos": 3,
+        "total": 19,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "MENDERES": {
+        "pos": 2,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 1,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KENAN EVREN": {
+        "pos": 3,
+        "total": 13,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "KOZAN YOLU": {
+        "pos": 5,
+        "total": 20,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 4
+      },
+      "E5 (D400)": {
+        "pos": 3,
+        "total": 12,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ZİYAPAŞA": {
+        "pos": 2,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 4,
+        "total": 15,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SEYHAN": {
+        "pos": 3,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "İBO OSMAN": {
+        "pos": 2,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 12,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 1,
+        "total": 15,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KENAN EVREN": {
+        "pos": 1,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KOZAN YOLU": {
+        "pos": 1,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÖZAL": {
+        "pos": 7,
+        "total": 40,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 4
+      },
+      "E5 (D400)": {
+        "pos": 1,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "SEYHAN": {
+        "pos": 0,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 1,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 1,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "SARIÇAM": {
+        "pos": 1,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÇUKUROVA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "SEYHAN": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÖZAL": {
+        "pos": 0,
+        "total": 10,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "80. YIL": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SARIÇAM": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KOZAN YOLU": {
+        "pos": 1,
+        "total": 2,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÇUKUROVA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "80. YIL": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SARIÇAM": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÖZAL": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "ÖZAL": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 1,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 4,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SARIÇAM": {
+        "pos": 1,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KOZAN YOLU": {
+        "pos": 1,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÖZAL": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "KOZAN YOLU": {
+        "pos": 0,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SARIÇAM": {
+        "pos": 1,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 4,
+        "total": 30,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 3,
+        "total": 21,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÇUKUROVA": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 0,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÖZAL": {
+        "pos": 2,
+        "total": 8,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "80. YIL": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 9,
+        "total": 16,
+        "radar": 9,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 2,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 27,
+        "total": 74,
+        "radar": 13,
+        "alcohol": 0,
+        "check": 14
+      },
+      "E5 (D400)": {
+        "pos": 15,
+        "total": 34,
+        "radar": 12,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SEYHAN": {
+        "pos": 2,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "SARIÇAM": {
+        "pos": 8,
+        "total": 27,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 8
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 1,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KOZAN YOLU": {
+        "pos": 5,
+        "total": 11,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 4
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KARATAŞ YOLU": {
+        "pos": 7,
+        "total": 10,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 1
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÖZAL": {
+        "pos": 2,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÇUKUROVA": {
+        "pos": 2,
+        "total": 3,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "SEYHAN": {
+        "pos": 6,
+        "total": 17,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 2
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KOZAN YOLU": {
+        "pos": 8,
+        "total": 21,
+        "radar": 8,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 4,
+        "total": 39,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 2
+      },
+      "SARIÇAM": {
+        "pos": 3,
+        "total": 10,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 1,
+        "total": 7,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 6,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÖZAL": {
+        "pos": 9,
+        "total": 25,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 3
+      },
+      "E5 (D400)": {
+        "pos": 3,
+        "total": 14,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KARATAŞ YOLU": {
+        "pos": 7,
+        "total": 9,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 3,
+        "total": 11,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "YÜREĞİR": {
+        "pos": 2,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "KOZAN YOLU": {
+        "pos": 24,
+        "total": 45,
+        "radar": 18,
+        "alcohol": 0,
+        "check": 7
+      },
+      "E5 (D400)": {
+        "pos": 26,
+        "total": 33,
+        "radar": 22,
+        "alcohol": 0,
+        "check": 5
+      },
+      "SARIÇAM": {
+        "pos": 9,
+        "total": 17,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SEYHAN": {
+        "pos": 12,
+        "total": 30,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 6
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 12,
+        "total": 21,
+        "radar": 8,
+        "alcohol": 0,
+        "check": 5
+      },
+      "OTOBAN": {
+        "pos": 32,
+        "total": 57,
+        "radar": 22,
+        "alcohol": 0,
+        "check": 10
+      },
+      "ÖZAL": {
+        "pos": 15,
+        "total": 19,
+        "radar": 12,
+        "alcohol": 0,
+        "check": 4
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 7,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 7,
+        "total": 15,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 4
+      },
+      "80. YIL": {
+        "pos": 5,
+        "total": 17,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 5
+      },
+      "KARATAŞ YOLU": {
+        "pos": 8,
+        "total": 16,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 3
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "KOZAN YOLU": {
+        "pos": 22,
+        "total": 39,
+        "radar": 19,
+        "alcohol": 0,
+        "check": 3
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 8,
+        "total": 16,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 4
+      },
+      "ÖZAL": {
+        "pos": 10,
+        "total": 21,
+        "radar": 9,
+        "alcohol": 0,
+        "check": 2
+      },
+      "KARATAŞ YOLU": {
+        "pos": 11,
+        "total": 26,
+        "radar": 9,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KENAN EVREN": {
+        "pos": 1,
+        "total": 3,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 8,
+        "total": 27,
+        "radar": 7,
+        "alcohol": 0,
+        "check": 2
+      },
+      "YÜREĞİR": {
+        "pos": 4,
+        "total": 14,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 3
+      },
+      "OTOBAN": {
+        "pos": 26,
+        "total": 51,
+        "radar": 19,
+        "alcohol": 0,
+        "check": 7
+      },
+      "SARIÇAM": {
+        "pos": 9,
+        "total": 21,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 5
+      },
+      "MENDERES": {
+        "pos": 2,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "SEYHAN": {
+        "pos": 12,
+        "total": 37,
+        "radar": 8,
+        "alcohol": 0,
+        "check": 5
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 2,
+        "total": 3,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      }
+    },
+    {
+      "KOZAN YOLU": {
+        "pos": 5,
+        "total": 22,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 1
+      },
+      "OTOBAN": {
+        "pos": 13,
+        "total": 48,
+        "radar": 8,
+        "alcohol": 0,
+        "check": 7
+      },
+      "SARIÇAM": {
+        "pos": 3,
+        "total": 19,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 4,
+        "total": 13,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 1
+      },
+      "YÜREĞİR": {
+        "pos": 2,
+        "total": 12,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 3,
+        "total": 9,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 10,
+        "total": 18,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 7
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "BARAJ YOLU": {
+        "pos": 1,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KENAN EVREN": {
+        "pos": 1,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "E5 (D400)": {
+        "pos": 6,
+        "total": 17,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÖZAL": {
+        "pos": 2,
+        "total": 8,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 10,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 2,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "İBO OSMAN": {
+        "pos": 3,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 9,
+        "total": 29,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 5
+      },
+      "SARIÇAM": {
+        "pos": 6,
+        "total": 24,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 10,
+        "total": 24,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 5
+      },
+      "MENDERES": {
+        "pos": 3,
+        "total": 13,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ÖZAL": {
+        "pos": 2,
+        "total": 19,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "KOZAN YOLU": {
+        "pos": 13,
+        "total": 29,
+        "radar": 11,
+        "alcohol": 0,
+        "check": 2
+      },
+      "YÜREĞİR": {
+        "pos": 3,
+        "total": 25,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 5,
+        "total": 14,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 4
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "SEYHAN": {
+        "pos": 10,
+        "total": 20,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 8
+      },
+      "E5 (D400)": {
+        "pos": 7,
+        "total": 10,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 3
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 3,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "İBO OSMAN": {
+        "pos": 1,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "KARATAŞ YOLU": {
+        "pos": 14,
+        "total": 26,
+        "radar": 12,
+        "alcohol": 0,
+        "check": 4
+      },
+      "OTOBAN": {
+        "pos": 37,
+        "total": 67,
+        "radar": 26,
+        "alcohol": 0,
+        "check": 12
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "E5 (D400)": {
+        "pos": 18,
+        "total": 31,
+        "radar": 16,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KOZAN YOLU": {
+        "pos": 32,
+        "total": 45,
+        "radar": 31,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 6,
+        "total": 14,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 4
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 16,
+        "total": 22,
+        "radar": 11,
+        "alcohol": 0,
+        "check": 5
+      },
+      "SARIÇAM": {
+        "pos": 21,
+        "total": 33,
+        "radar": 13,
+        "alcohol": 0,
+        "check": 9
+      },
+      "ÖZAL": {
+        "pos": 5,
+        "total": 19,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 1
+      },
+      "YÜREĞİR": {
+        "pos": 5,
+        "total": 16,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 3
+      },
+      "SEYHAN": {
+        "pos": 12,
+        "total": 28,
+        "radar": 11,
+        "alcohol": 0,
+        "check": 1
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 0,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 1,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 1,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 33,
+        "total": 81,
+        "radar": 24,
+        "alcohol": 0,
+        "check": 9
+      },
+      "ÖZAL": {
+        "pos": 10,
+        "total": 26,
+        "radar": 5,
+        "alcohol": 1,
+        "check": 4
+      },
+      "SEYHAN": {
+        "pos": 13,
+        "total": 34,
+        "radar": 7,
+        "alcohol": 0,
+        "check": 7
+      },
+      "KOZAN YOLU": {
+        "pos": 30,
+        "total": 48,
+        "radar": 22,
+        "alcohol": 0,
+        "check": 8
+      },
+      "SARIÇAM": {
+        "pos": 17,
+        "total": 37,
+        "radar": 15,
+        "alcohol": 0,
+        "check": 2
+      },
+      "MENDERES": {
+        "pos": 3,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KARATAŞ YOLU": {
+        "pos": 13,
+        "total": 22,
+        "radar": 10,
+        "alcohol": 0,
+        "check": 5
+      },
+      "YÜREĞİR": {
+        "pos": 3,
+        "total": 27,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "E5 (D400)": {
+        "pos": 16,
+        "total": 26,
+        "radar": 10,
+        "alcohol": 0,
+        "check": 6
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 21,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 1,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KENAN EVREN": {
+        "pos": 2,
+        "total": 7,
+        "radar": 1,
+        "alcohol": 1,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 6,
+        "total": 17,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 1,
+        "total": 2,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÇUKUROVA": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KOZAN YOLU": {
+        "pos": 7,
+        "total": 36,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 4
+      },
+      "OTOBAN": {
+        "pos": 21,
+        "total": 82,
+        "radar": 12,
+        "alcohol": 0,
+        "check": 9
+      },
+      "E5 (D400)": {
+        "pos": 5,
+        "total": 22,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ÖZAL": {
+        "pos": 3,
+        "total": 18,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "SEYHAN": {
+        "pos": 1,
+        "total": 19,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 4,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 4
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SARIÇAM": {
+        "pos": 8,
+        "total": 25,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 5
+      },
+      "KARATAŞ YOLU": {
+        "pos": 3,
+        "total": 11,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KENAN EVREN": {
+        "pos": 2,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ÇUKUROVA": {
+        "pos": 2,
+        "total": 3,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 4,
+        "total": 70,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 3
+      },
+      "SARIÇAM": {
+        "pos": 2,
+        "total": 30,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÖZAL": {
+        "pos": 1,
+        "total": 10,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KOZAN YOLU": {
+        "pos": 6,
+        "total": 21,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ZİYAPAŞA": {
+        "pos": 1,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 1,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "E5 (D400)": {
+        "pos": 1,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 12,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 1,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "YÜREĞİR": {
+        "pos": 4,
+        "total": 20,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SEYHAN": {
+        "pos": 4,
+        "total": 18,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 3
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "ÖZAL": {
+        "pos": 0,
+        "total": 22,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 1,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "BARAJ YOLU": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 0,
+        "total": 20,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 6,
+        "total": 14,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KOZAN YOLU": {
+        "pos": 4,
+        "total": 18,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 2
+      },
+      "SARIÇAM": {
+        "pos": 3,
+        "total": 34,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "E5 (D400)": {
+        "pos": 2,
+        "total": 20,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 0
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 19,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ÇUKUROVA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 7,
+        "total": 66,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 10,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 2,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "ÖZAL": {
+        "pos": 3,
+        "total": 26,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 1,
+        "total": 18,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "OTOBAN": {
+        "pos": 4,
+        "total": 41,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 4
+      },
+      "SARIÇAM": {
+        "pos": 3,
+        "total": 19,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "SEYHAN": {
+        "pos": 2,
+        "total": 21,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 1
+      },
+      "KOZAN YOLU": {
+        "pos": 3,
+        "total": 17,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "BARAJ YOLU": {
+        "pos": 1,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 0,
+        "total": 20,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "E5 (D400)": {
+        "pos": 8,
+        "total": 18,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 2
+      },
+      "MENDERES": {
+        "pos": 2,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 1
+      },
+      "ÇUKUROVA": {
+        "pos": 0,
+        "total": 8,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 9,
+        "total": 17,
+        "radar": 8,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 2
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 10,
+        "total": 53,
+        "radar": 1,
+        "alcohol": 1,
+        "check": 9
+      },
+      "SARIÇAM": {
+        "pos": 7,
+        "total": 46,
+        "radar": 4,
+        "alcohol": 0,
+        "check": 4
+      },
+      "ÖZAL": {
+        "pos": 20,
+        "total": 71,
+        "radar": 2,
+        "alcohol": 1,
+        "check": 18
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 10,
+        "total": 34,
+        "radar": 10,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KENAN EVREN": {
+        "pos": 2,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ÇUKUROVA": {
+        "pos": 1,
+        "total": 8,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "YÜREĞİR": {
+        "pos": 2,
+        "total": 24,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KOZAN YOLU": {
+        "pos": 11,
+        "total": 28,
+        "radar": 10,
+        "alcohol": 0,
+        "check": 1
+      },
+      "E5 (D400)": {
+        "pos": 6,
+        "total": 18,
+        "radar": 5,
+        "alcohol": 1,
+        "check": 0
+      },
+      "SEYHAN": {
+        "pos": 5,
+        "total": 20,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 4
+      },
+      "BARAJ YOLU": {
+        "pos": 2,
+        "total": 16,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "MENDERES": {
+        "pos": 3,
+        "total": 24,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 6,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 2
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 15,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 4,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 1,
+        "total": 5,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 3,
+        "total": 8,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      }
+    },
+    {
+      "OTOBAN": {
+        "pos": 15,
+        "total": 59,
+        "radar": 2,
+        "alcohol": 3,
+        "check": 11
+      },
+      "MENDERES": {
+        "pos": 4,
+        "total": 28,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 4
+      },
+      "SARIÇAM": {
+        "pos": 15,
+        "total": 59,
+        "radar": 5,
+        "alcohol": 2,
+        "check": 8
+      },
+      "ÖZAL": {
+        "pos": 45,
+        "total": 111,
+        "radar": 3,
+        "alcohol": 1,
+        "check": 42
+      },
+      "BARAJ YOLU": {
+        "pos": 3,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "YÜREĞİR": {
+        "pos": 3,
+        "total": 18,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 2
+      },
+      "KOZAN YOLU": {
+        "pos": 9,
+        "total": 26,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 8
+      },
+      "E5 (D400)": {
+        "pos": 7,
+        "total": 18,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 2
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 7,
+        "total": 25,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 4
+      },
+      "ÇUKUROVA": {
+        "pos": 4,
+        "total": 12,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 3
+      },
+      "SEYHAN": {
+        "pos": 8,
+        "total": 35,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 7
+      },
+      "KENAN EVREN": {
+        "pos": 1,
+        "total": 17,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "KARATAŞ YOLU": {
+        "pos": 1,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 7,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 21,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "80. YIL": {
+        "pos": 6,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 2,
+        "check": 6
+      },
+      "ZİYAPAŞA": {
+        "pos": 1,
+        "total": 11,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 1,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    },
+    {
+      "ÖZAL": {
+        "pos": 40,
+        "total": 110,
+        "radar": 6,
+        "alcohol": 1,
+        "check": 34
+      },
+      "BARAJ YOLU": {
+        "pos": 2,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 2
+      },
+      "80. YIL": {
+        "pos": 1,
+        "total": 12,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 8,
+        "total": 19,
+        "radar": 5,
+        "alcohol": 1,
+        "check": 2
+      },
+      "E5 (D400)": {
+        "pos": 13,
+        "total": 26,
+        "radar": 10,
+        "alcohol": 0,
+        "check": 4
+      },
+      "KOZAN YOLU": {
+        "pos": 9,
+        "total": 39,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 8
+      },
+      "OTOBAN": {
+        "pos": 13,
+        "total": 54,
+        "radar": 1,
+        "alcohol": 2,
+        "check": 10
+      },
+      "SARIÇAM": {
+        "pos": 13,
+        "total": 63,
+        "radar": 2,
+        "alcohol": 1,
+        "check": 10
+      },
+      "YÜREĞİR": {
+        "pos": 2,
+        "total": 24,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 2
+      },
+      "ÇUKUROVA": {
+        "pos": 3,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "KENAN EVREN": {
+        "pos": 3,
+        "total": 15,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 1
+      },
+      "SEYHAN": {
+        "pos": 7,
+        "total": 31,
+        "radar": 3,
+        "alcohol": 0,
+        "check": 4
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 6,
+        "total": 33,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 1
+      },
+      "MENDERES": {
+        "pos": 3,
+        "total": 28,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 12,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "ZİYAPAŞA": {
+        "pos": 1,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 5,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "GAZİPAŞA": {
+        "pos": 1,
+        "total": 13,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      }
+    },
+    {
+      "ÖZAL": {
+        "pos": 50,
+        "total": 110,
+        "radar": 10,
+        "alcohol": 0,
+        "check": 40
+      },
+      "MAVİ BULVAR": {
+        "pos": 0,
+        "total": 24,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "MENDERES": {
+        "pos": 1,
+        "total": 27,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "TÜRKMENBAŞI": {
+        "pos": 10,
+        "total": 44,
+        "radar": 5,
+        "alcohol": 0,
+        "check": 5
+      },
+      "ÇUKUROVA": {
+        "pos": 4,
+        "total": 21,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 4
+      },
+      "KOZAN YOLU": {
+        "pos": 3,
+        "total": 28,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 3
+      },
+      "SEYHAN": {
+        "pos": 10,
+        "total": 35,
+        "radar": 4,
+        "alcohol": 1,
+        "check": 6
+      },
+      "SARIÇAM": {
+        "pos": 35,
+        "total": 100,
+        "radar": 0,
+        "alcohol": 4,
+        "check": 32
+      },
+      "E5 (D400)": {
+        "pos": 7,
+        "total": 32,
+        "radar": 6,
+        "alcohol": 0,
+        "check": 1
+      },
+      "YÜREĞİR": {
+        "pos": 4,
+        "total": 23,
+        "radar": 1,
+        "alcohol": 0,
+        "check": 3
+      },
+      "OTOBAN": {
+        "pos": 40,
+        "total": 108,
+        "radar": 1,
+        "alcohol": 3,
+        "check": 37
+      },
+      "KENAN EVREN": {
+        "pos": 1,
+        "total": 19,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 1
+      },
+      "80. YIL": {
+        "pos": 2,
+        "total": 12,
+        "radar": 2,
+        "alcohol": 0,
+        "check": 0
+      },
+      "İBO OSMAN": {
+        "pos": 0,
+        "total": 3,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "BARAJ YOLU": {
+        "pos": 4,
+        "total": 14,
+        "radar": 0,
+        "alcohol": 1,
+        "check": 3
+      },
+      "GAZİPAŞA": {
+        "pos": 0,
+        "total": 9,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      },
+      "KARATAŞ YOLU": {
+        "pos": 4,
+        "total": 6,
+        "radar": 1,
+        "alcohol": 2,
+        "check": 3
+      },
+      "ZİYAPAŞA": {
+        "pos": 0,
+        "total": 18,
+        "radar": 0,
+        "alcohol": 0,
+        "check": 0
+      }
+    }
+  ],
+  "locations": {
+    "MENDERES": {
+      "pos": 38,
+      "total": 302,
+      "radar": 2,
+      "alcohol": 3,
+      "check": 33,
+      "landmarkCounts": {
+        "dilberler": 10,
+        "giriş": 7,
+        "çıkış": 2
+      },
+      "topLandmark": "dilberler"
+    },
+    "ZİYAPAŞA": {
+      "pos": 6,
+      "total": 101,
+      "radar": 1,
+      "alcohol": 0,
+      "check": 5,
+      "landmarkCounts": {
+        "meydan": 1,
+        "atatürk parkı": 1
+      },
+      "topLandmark": "meydan"
+    },
+    "ÖZAL": {
+      "pos": 305,
+      "total": 862,
+      "radar": 110,
+      "alcohol": 6,
+      "check": 198,
+      "landmarkCounts": {
+        "ramazanoğlu": 48,
+        "aksagaz": 1,
+        "hayal kahvesi": 2,
+        "güzelyalı": 1,
+        "starbucks": 1
+      },
+      "topLandmark": "ramazanoğlu"
+    },
+    "MAVİ BULVAR": {
+      "pos": 6,
+      "total": 163,
+      "radar": 0,
+      "alcohol": 0,
+      "check": 6,
+      "landmarkCounts": {
+        "köprü": 2
+      },
+      "topLandmark": "köprü"
+    },
+    "KOZAN YOLU": {
+      "pos": 201,
+      "total": 535,
+      "radar": 140,
+      "alcohol": 0,
+      "check": 62,
+      "landmarkCounts": {
+        "köprü": 17,
+        "yavuzlar": 10,
+        "kanal": 9
+      },
+      "topLandmark": "köprü"
+    },
+    "KARATAŞ YOLU": {
+      "pos": 119,
+      "total": 267,
+      "radar": 86,
+      "alcohol": 4,
+      "check": 37,
+      "landmarkCounts": {
+        "havutlu": 17,
+        "doğankent": 26
+      },
+      "topLandmark": "doğankent"
+    },
+    "SEYHAN": {
+      "pos": 127,
+      "total": 472,
+      "radar": 55,
+      "alcohol": 5,
+      "check": 73,
+      "landmarkCounts": {},
+      "topLandmark": null
+    },
+    "BARAJ YOLU": {
+      "pos": 19,
+      "total": 148,
+      "radar": 2,
+      "alcohol": 2,
+      "check": 17,
+      "landmarkCounts": {
+        "duygu kafe": 8,
+        "hastane": 1
+      },
+      "topLandmark": "duygu kafe"
+    },
+    "ÇUKUROVA": {
+      "pos": 31,
+      "total": 148,
+      "radar": 7,
+      "alcohol": 4,
+      "check": 23,
+      "landmarkCounts": {},
+      "topLandmark": null
+    },
+    "TÜRKMENBAŞI": {
+      "pos": 89,
+      "total": 358,
+      "radar": 53,
+      "alcohol": 0,
+      "check": 37,
+      "landmarkCounts": {
+        "otoban girişi": 2,
+        "belediye evleri": 1
+      },
+      "topLandmark": "otoban girişi"
+    },
+    "KENAN EVREN": {
+      "pos": 23,
+      "total": 154,
+      "radar": 6,
+      "alcohol": 1,
+      "check": 17,
+      "landmarkCounts": {},
+      "topLandmark": null
+    },
+    "E5 (D400)": {
+      "pos": 157,
+      "total": 438,
+      "radar": 122,
+      "alcohol": 1,
+      "check": 41,
+      "landmarkCounts": {
+        "öğretmenler bulvarı": 9,
+        "şakirpaşa": 9
+      },
+      "topLandmark": "öğretmenler bulvarı"
+    },
+    "İBO OSMAN": {
+      "pos": 11,
+      "total": 42,
+      "radar": 1,
+      "alcohol": 0,
+      "check": 11,
+      "landmarkCounts": {},
+      "topLandmark": null
+    },
+    "OTOBAN": {
+      "pos": 328,
+      "total": 1120,
+      "radar": 145,
+      "alcohol": 14,
+      "check": 178,
+      "landmarkCounts": {
+        "petrol": 5,
+        "gişeler": 20
+      },
+      "topLandmark": "gişeler"
+    },
+    "SARIÇAM": {
+      "pos": 189,
+      "total": 687,
+      "radar": 65,
+      "alcohol": 10,
+      "check": 119,
+      "landmarkCounts": {
+        "buruk": 8,
+        "balcalı": 1
+      },
+      "topLandmark": "buruk"
+    },
+    "80. YIL": {
+      "pos": 42,
+      "total": 234,
+      "radar": 11,
+      "alcohol": 4,
+      "check": 32,
+      "landmarkCounts": {},
+      "topLandmark": null
+    },
+    "YÜREĞİR": {
+      "pos": 50,
+      "total": 338,
+      "radar": 9,
+      "alcohol": 1,
+      "check": 41,
+      "landmarkCounts": {},
+      "topLandmark": null
+    },
+    "GAZİPAŞA": {
+      "pos": 1,
+      "total": 87,
+      "radar": 0,
+      "alcohol": 0,
+      "check": 1,
+      "landmarkCounts": {},
+      "topLandmark": null
+    }
+  },
+  "heatMap": [
+    [
+      22,
+      22,
+      4,
+      1,
+      0,
+      0,
+      2,
+      6,
+      6,
+      12,
+      26,
+      18,
+      6,
+      14,
+      22,
+      23,
+      5,
+      5,
+      8,
+      12,
+      22,
+      12,
+      13,
+      25
+    ],
+    [
+      15,
+      12,
+      4,
+      0,
+      0,
+      0,
+      1,
+      3,
+      12,
+      4,
+      22,
+      11,
+      6,
+      11,
+      28,
+      24,
+      4,
+      6,
+      0,
+      4,
+      17,
+      14,
+      8,
+      36
+    ],
+    [
+      20,
+      5,
+      0,
+      0,
+      0,
+      1,
+      0,
+      2,
+      17,
+      3,
+      19,
+      25,
+      10,
+      6,
+      27,
+      29,
+      17,
+      3,
+      5,
+      1,
+      5,
+      27,
+      33,
+      25
+    ],
+    [
+      13,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      8,
+      8,
+      23,
+      21,
+      2,
+      12,
+      19,
+      18,
+      14,
+      2,
+      3,
+      5,
+      15,
+      17,
+      17,
+      23
+    ],
+    [
+      34,
+      4,
+      2,
+      0,
+      0,
+      0,
+      1,
+      8,
+      15,
+      6,
+      34,
+      12,
+      13,
+      16,
+      24,
+      22,
+      4,
+      5,
+      1,
+      6,
+      11,
+      19,
+      14,
+      19
+    ],
+    [
+      12,
+      8,
+      5,
+      0,
+      0,
+      0,
+      2,
+      1,
+      9,
+      6,
+      16,
+      22,
+      15,
+      4,
+      30,
+      20,
+      6,
+      6,
+      3,
+      6,
+      8,
+      28,
+      20,
+      22
+    ],
+    [
+      18,
+      7,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      3,
+      9,
+      12,
+      8,
+      7,
+      11,
+      19,
+      14,
+      9,
+      1,
+      6,
+      4,
+      7,
+      12,
+      20,
+      25
+    ]
+  ],
+  "coords": {
+    "ÖZAL": [
+      37.048,
+      35.284
+    ],
+    "MENDERES": [
+      37.059,
+      35.3
+    ],
+    "ZİYAPAŞA": [
+      36.995,
+      35.321
+    ],
+    "GAZİPAŞA": [
+      36.999,
+      35.326
+    ],
+    "TÜRKMENBAŞI": [
+      37.038,
+      35.273
+    ],
+    "MAVİ BULVAR": [
+      37.035,
+      35.305
+    ],
+    "KENAN EVREN": [
+      37.039,
+      35.304
+    ],
+    "KOZAN YOLU": [
+      37.015,
+      35.37
+    ],
+    "KARATAŞ YOLU": [
+      36.955,
+      35.335
+    ],
+    "BARAJ YOLU": [
+      37.017,
+      35.319
+    ],
+    "OTOBAN": [
+      37.042,
+      35.25
+    ],
+    "E5 (D400)": [
+      36.991,
+      35.295
+    ],
+    "SARIÇAM": [
+      37.045,
+      35.39
+    ],
+    "SEYHAN": [
+      36.985,
+      35.32
+    ],
+    "YÜREĞİR": [
+      36.985,
+      35.35
+    ],
+    "ÇUKUROVA": [
+      37.05,
+      35.28
+    ],
+    "80. YIL": [
+      37.035,
+      35.26
+    ],
+    "İBO OSMAN": [
+      37.01,
+      35.315
+    ]
+  },
+  "connections": {
+    "ÖZAL": [
+      "MENDERES",
+      "KENAN EVREN",
+      "TÜRKMENBAŞI",
+      "ÇUKUROVA",
+      "OTOBAN"
+    ],
+    "MENDERES": [
+      "ÖZAL",
+      "BARAJ YOLU",
+      "SEYHAN"
+    ],
+    "KENAN EVREN": [
+      "ÖZAL",
+      "TÜRKMENBAŞI",
+      "MAVİ BULVAR"
+    ],
+    "TÜRKMENBAŞI": [
+      "ÖZAL",
+      "KENAN EVREN",
+      "OTOBAN",
+      "80. YIL"
+    ],
+    "BARAJ YOLU": [
+      "MENDERES",
+      "GAZİPAŞA",
+      "İBO OSMAN",
+      "SEYHAN"
+    ],
+    "ZİYAPAŞA": [
+      "GAZİPAŞA",
+      "SEYHAN",
+      "E5 (D400)"
+    ],
+    "GAZİPAŞA": [
+      "ZİYAPAŞA",
+      "BARAJ YOLU"
+    ],
+    "SEYHAN": [
+      "BARAJ YOLU",
+      "ZİYAPAŞA",
+      "MENDERES",
+      "YÜREĞİR",
+      "E5 (D400)"
+    ],
+    "E5 (D400)": [
+      "ZİYAPAŞA",
+      "SEYHAN",
+      "KOZAN YOLU",
+      "KARATAŞ YOLU",
+      "OTOBAN"
+    ],
+    "KOZAN YOLU": [
+      "E5 (D400)",
+      "SARIÇAM",
+      "YÜREĞİR"
+    ],
+    "KARATAŞ YOLU": [
+      "E5 (D400)",
+      "YÜREĞİR"
+    ],
+    "OTOBAN": [
+      "ÖZAL",
+      "TÜRKMENBAŞI",
+      "E5 (D400)",
+      "SARIÇAM"
+    ],
+    "SARIÇAM": [
+      "KOZAN YOLU",
+      "OTOBAN"
+    ],
+    "YÜREĞİR": [
+      "SEYHAN",
+      "KOZAN YOLU",
+      "KARATAŞ YOLU"
+    ],
+    "MAVİ BULVAR": [
+      "KENAN EVREN",
+      "İBO OSMAN"
+    ],
+    "İBO OSMAN": [
+      "BARAJ YOLU",
+      "MAVİ BULVAR"
+    ],
+    "ÇUKUROVA": [
+      "ÖZAL"
+    ],
+    "80. YIL": [
+      "TÜRKMENBAŞI"
+    ]
+  },
+  "totalMessages": 12479,
+  "validReports": 3072
+};
+
+    const locSelect = document.getElementById('locSelect');
+    const hourSelect = document.getElementById('hourSelect');
+    const probValue = document.getElementById('probValue');
+    const riskLevelLabel = document.getElementById('riskLevelLabel');
+    const insightText = document.getElementById('insightText');
+    const hotspotList = document.getElementById('hotspotList');
+
+    // Populate UI
+    Object.keys(data.locations).forEach(loc => {
+        let opt = document.createElement('option');
+        opt.value = loc;
+        opt.innerText = loc;
+        locSelect.appendChild(opt);
+    });
+
+    for(let i=0; i<24; i++) {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = (i < 10 ? '0' + i : i) + ':00';
+        hourSelect.appendChild(opt);
+    }
+
+    function calculateRisk() {
+        const loc = locSelect.value;
+        const hour = parseInt(hourSelect.value);
+                const hourData = data.hourly[hour][loc] || { pos: 0, total: 1 };
+        const prob = Math.round((hourData.pos / (hourData.total || 1)) * 100);
+        
+        probValue.innerText = prob + '%';
+
+        // Update Pro-Tips
+        const tpCard = document.getElementById('proTipCard');
+        const tpText = document.getElementById('proTipText');
+        const landmark = data.locations[loc]?.topLandmark;
+        
+        if (landmark) {
+            tpCard.style.display = 'block';
+            const riskType = (hourData.radar > hourData.alcohol) ? 'RADAR' : (hourData.alcohol > 0 ? 'ALKOL' : 'ÇEVİRME');
+            tpText.innerHTML = `<b>${loc}</b> bölgesinde özellikle <b>${landmark.toUpperCase()}</b> civarı geçmişte sıkça raporlanmış. <br><span style="color:white; opacity:0.8;">Bu saatte daha çok <b>${riskType}</b> raporları gelmiş.</span>`;
+        } else {
+            tpCard.style.display = 'none';
+        }
+
+        // Golden Route Logic
+        const routeCard = document.getElementById('goldenRouteCard');
+        const routeText = document.getElementById('goldenRouteText');
+        
+        if (prob > 30) {
+            const alternatives = Object.entries(data.hourly[hour])
+                .filter(([name, stats]) => name !== loc && stats.total > 5)
+                .sort((a,b) => (a[1].pos/a[1].total) - (b[1].pos/b[1].total));
+            
+            if (alternatives.length > 0) {
+                routeCard.style.display = 'block';
+                const best = alternatives[0][0];
+                const bestProb = Math.round((alternatives[0][1].pos / alternatives[0][1].total) * 100);
+                routeText.innerHTML = `<b>${loc}</b> şu an riskli görünüyor. Alternatif olarak <b>${best}</b> şu an <b>%${bestProb}</b> risk oranıyla çok daha güvenli bir rota.`;
+            } else {
+                routeCard.style.display = 'none';
+            }
+        } else {
+            routeCard.style.display = 'none';
+        }
+
+        if (prob > 70) {
+            riskLevelLabel.innerText = '⚠️ KRİTİK SEVİYE';
+            riskLevelLabel.style.color = 'var(--danger)';
+            insightText.innerText = 'Bu konumda bu saatte kesinlikle radar veya çevirme bekleniyor.';
+        } else if (prob > 40) {
+            riskLevelLabel.innerText = '🔶 YÜKSEK RİSK';
+            riskLevelLabel.style.color = 'var(--warning)';
+            insightText.innerText = 'Gelen raporlar yoğun, dikkatli geçmenizde fayda var.';
+        } else if (prob > 15) {
+            riskLevelLabel.innerText = '🔷 DÜŞÜK RİSK';
+            riskLevelLabel.style.color = 'var(--accent)';
+            insightText.innerText = 'Bölge genelde sakin ancak nadir raporlar mevcut.';
+        } else {
+            riskLevelLabel.innerText = '✅ TEMİZ';
+            riskLevelLabel.style.color = 'var(--success)';
+            insightText.innerText = 'İstatiksel olarak şu an burası en güvenli yollardan biri.';
+        }
+    }
+
+    function renderHotspots() {
+        const sorted = Object.entries(data.locations).sort((a,b) => b[1].pos - a[1].pos).slice(0, 6);
+        hotspotList.innerHTML = '';
+        sorted.forEach(([name, stats]) => {
+            const riskClass = stats.pos > 200 ? 'high' : (stats.pos > 50 ? 'med' : 'low');
+            hotspotList.innerHTML += `
+                <div class="hotspot-item">
+                    <div class="loc-info">
+                        <h4>${name}</h4>
+                        <span>${stats.total} Toplam Söz Etme</span>
+                    </div>
+                    <div class="risk-badge ${riskClass}">${stats.pos} TESPİT</div>
+                </div>
+            `;
+        });
+    }
+
+    locSelect.onchange = calculateRisk;
+    hourSelect.onchange = calculateRisk;
+    
+    // Default to Özal at 22:00
+    locSelect.value = 'ÖZAL';
+    hourSelect.value = 22;
+    calculateRisk();
+    renderHotspots();
+    
+    const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    function renderHeatmap() {
+        const header = document.getElementById('heatmapHeader');
+        const body = document.getElementById('heatmapBody');
+        
+        header.innerHTML = '<th></th>' + [...Array(24).keys()].map(h => `<th>${h}</th>`).join('');
+        
+        body.innerHTML = '';
+        data.heatMap.forEach((dayRow, i) => {
+            let row = `<tr><td style="font-weight:600; padding:4px;">${days[i]}</td>`;
+            dayRow.forEach(count => {
+                const color = count > 15 ? '#ef4444' : (count > 5 ? '#f59e0b' : (count > 0 ? '#3b82f6' : '#1e293b'));
+                const opacity = count > 0 ? Math.min(0.2 + (count/30), 1) : 0.1;
+                row += `<td style="background:${color}; opacity:${opacity}; width:15px; height:15px; border:1px solid rgba(0,0,0,0.2);" title="Risk: ${count}"></td>`;
+            });
+            row += '</tr>';
+            body.innerHTML += row;
+        });
+    }
+    renderHeatmap();
+    
+    
+    
+    let map, routeLine, userMarker, startMarker, endMarker;
+    let markers = {};
+    let selectionState = 'START'; // 'START' or 'END'
+
+    function initMap() {
+        map = L.map('map').setView([37.01, 35.31], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+        const routeStart = document.getElementById('routeStart');
+        const routeEnd = document.getElementById('routeEnd');
+
+        Object.keys(data.coords).forEach(loc => {
+            const [lat, lng] = data.coords[loc];
+            const circle = L.circle([lat, lng], {
+                color: '#3b82f6',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.4,
+                radius: 400
+            }).addTo(map);
+            
+            markers[loc] = circle;
+
+            let opt1 = document.createElement('option'); opt1.value = loc; opt1.innerText = loc;
+            let opt2 = document.createElement('option'); opt2.value = loc; opt2.innerText = loc;
+            routeStart.appendChild(opt1);
+            routeEnd.appendChild(opt2);
+        });
+
+        // Set up Map Interaction
+        map.on('click', onMapClick);
+
+        document.getElementById('btnCheckRoute').onclick = checkRoute;
+        hourSelect.addEventListener('change', updateMapMarkers);
+        updateMapMarkers(); 
+
+        // Geolocation
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                const userCoords = [pos.coords.latitude, pos.coords.longitude];
+                userMarker = L.marker(userCoords, {icon: L.divIcon({className: 'user-icon', html: '📍', iconSize: [20, 20]})}).addTo(map);
+                data.coords["USER_LOC"] = userCoords;
+            });
+        }
+    }
+
+    function onMapClick(e) {
+        // Find closest hub
+        let closest = null;
+        let minDist = Infinity;
+        
+        Object.entries(data.coords).forEach(([name, coords]) => {
+            const d = map.distance(e.latlng, coords);
+            if (d < minDist) {
+                minDist = d;
+                closest = name;
+            }
+        });
+
+        if (minDist > 3000) return; // Ignore if too far from any hub
+
+        if (selectionState === 'START') {
+            document.getElementById('routeStart').value = closest;
+            if (startMarker) map.removeLayer(startMarker);
+            startMarker = L.marker(data.coords[closest], {icon: L.divIcon({html: '🟢', className: ''})}).addTo(map).bindPopup("Başlangıç: " + closest).openPopup();
+            selectionState = 'END';
+        } else {
+            document.getElementById('routeEnd').value = closest;
+            if (endMarker) map.removeLayer(endMarker);
+            endMarker = L.marker(data.coords[closest], {icon: L.divIcon({html: '🔴', className: ''})}).addTo(map).bindPopup("Hedef: " + closest).openPopup();
+            selectionState = 'START';
+            checkRoute(); // Auto pathfind
+        }
+    }
+
+    function dijkstra(start, end, hour) {
+        let dist = {};
+        let prev = {};
+        let queue = new Set();
+
+        Object.keys(data.coords).forEach(node => {
+            dist[node] = Infinity;
+            prev[node] = null;
+            queue.add(node);
+        });
+
+        dist[start] = 0;
+
+        while (queue.size > 0) {
+            let u = null;
+            queue.forEach(node => {
+                if (u === null || dist[node] < dist[u]) u = node;
+            });
+
+            if (u === end) break;
+            queue.delete(u);
+
+            const neighbors = data.connections[u] || [];
+            neighbors.forEach(v => {
+                if (!queue.has(v)) return;
+                
+                // Weight = Base Distance + Risk Penalty
+                const hourStats = data.hourly[hour][v] || { pos: 0, total: 1 };
+                const risk = (hourStats.pos / (hourStats.total || 1));
+                const alt = dist[u] + 1 + (risk * 20); // Each unit of risk adds heavy "cost"
+                
+                if (alt < dist[v]) {
+                    dist[v] = alt;
+                    prev[v] = u;
+                }
+            });
+        }
+
+        let path = [];
+        let curr = end;
+        while (curr) {
+            path.push(curr);
+            curr = prev[curr];
+        }
+        return path.reverse();
+    }
+
+    function checkRoute() {
+        const start = document.getElementById('routeStart').value;
+        const end = document.getElementById('routeEnd').value;
+        const resultDiv = document.getElementById('routeResult');
+        const hour = parseInt(hourSelect.value);
+        
+        if (!start || !end || start === end) return;
+        if (routeLine) map.removeLayer(routeLine);
+
+        const safePath = dijkstra(start, end, hour);
+        
+        if (safePath.length < 2) {
+             resultDiv.innerHTML = "❌ Üzgünüz, bu iki nokta arasında uygun bir rota bulamadık.";
+             resultDiv.style.display = 'block';
+             return;
+        }
+
+        const pathCoords = safePath.map(node => data.coords[node]);
+        
+        // Calculate path total risk for coloring
+        let totalRisk = 0;
+        safePath.forEach(node => {
+             const s = data.hourly[hour][node] || {pos: 0, total: 1};
+             totalRisk += (s.pos / s.total);
+        });
+        const avgRisk = totalRisk / safePath.length;
+        const lineColor = avgRisk > 0.3 ? '#ef4444' : '#10b981';
+
+        routeLine = L.polyline(pathCoords, {color: lineColor, weight: 8, opacity: 0.9, lineJoin: 'round'}).addTo(map);
+        map.fitBounds(routeLine.getBounds());
+
+        resultDiv.style.display = 'block';
+        const guide = safePath.join(' → ');
+        if (avgRisk > 0.3) {
+            resultDiv.innerHTML = `⚠️ <b>Dikkatli Olun:</b> En güvenli seçenek bile bu saatte risk barındırıyor.<br>📍 <b>Güzergah:</b> ${guide}<br>🚨 <b>Risk Nedeni:</b> Rota üzerindeki yoğun uygulama noktaları.`;
+            resultDiv.style.borderLeft = '4px solid var(--danger)';
+        } else {
+            resultDiv.innerHTML = `✅ <b>Güvenli Rota Bulundu:</b> İstatistiksel olarak en temiz güzergah belirlendi.<br>📍 <b>Güzergah:</b> ${guide}<br>✨ <b>Tavsiye:</b> Bu yol şu an en sakin seçenek.`;
+            resultDiv.style.borderLeft = '4px solid var(--success)';
+        }
+    }
+
+    function updateMapMarkers() {
+        const hour = parseInt(hourSelect.value);
+        Object.keys(markers).forEach(loc => {
+            const hourStats = data.hourly[hour][loc] || { pos: 0, total: 1 };
+            const risk = (hourStats.pos / (hourStats.total || 1));
+            const color = risk > 0.6 ? '#ef4444' : (risk > 0.2 ? '#f59e0b' : '#3b82f6');
+            markers[loc].setStyle({ color: color, fillColor: color });
+            
+            const riskType = (hourStats.radar > hourStats.alcohol) ? '📸 RADAR' : (hourStats.alcohol > 0 ? '🧪 ALKOL' : '🚨 ÇEVİRME');
+            markers[loc].bindPopup(`<b>${loc}</b><br>Risk: %${Math.round(risk*100)}<br>Tür: ${risk > 0 ? riskType : 'TEMİZ'}`);
+        });
+    }
+
+    initMap();
+
+
+</script>
+
+
+
+</body>
+</html>
